@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Study Tracker - Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Profile -->
+        <header class="bg-indigo-600 text-white p-6 rounded-lg shadow-md mb-8 flex items-center space-x-4">
+            <img src="{{ profile.picture_url }}" alt="Profile Picture" class="w-48 h-48 rounded-full object-cover border-2 border-white" />
+            <div>
+                <h1 class="text-3xl font-bold">{{ profile.name }}</h1>
+                <p class="mt-1">{{ profile.course }}</p>
+                <p class="mt-2">Visualize your progress and track your performance</p>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="mb-8 bg-white rounded-lg shadow-md p-4">
+            <ul class="flex flex-wrap justify-center space-x-4">
+                <li><a href="/" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Dashboard</a></li>
+                <li><a href="/studies" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Study Sessions</a></li>
+                <li><a href="/coding" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Coding Problems</a></li>
+                <li><a href="/projects" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Projects</a></li>
+                <li><a href="/reports" class="text-indigo-600 font-semibold px-4 py-2 rounded hover:bg-blue-100">Reports</a></li>
+            </ul>
+        </nav>
+
+        <!-- Study Time Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-blue-700">
+                <i class="fas fa-clock mr-2"></i>Study Time by Subject
+            </h2>
+            
+            {% if study_time %}
+            <div class="h-64">
+                <canvas id="studyTimeChart"></canvas>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No study data available for charts.</p>
+            {% endif %}
+        </div>
+
+        <!-- Coding Problems Stats -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-green-700">
+                <i class="fas fa-code mr-2"></i>Coding Problems Statistics
+            </h2>
+            
+            {% if problem_stats %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {% for difficulty, count in problem_stats.items() %}
+                <div class="text-center p-4 rounded-lg
+                    {% if difficulty == 'Easy' %}bg-green-100
+                    {% elif difficulty == 'Medium' %}bg-yellow-100
+                    {% else %}bg-red-100{% endif %}">
+                    <div class="text-3xl font-bold 
+                        {% if difficulty == 'Easy' %}text-green-700
+                        {% elif difficulty == 'Medium' %}text-yellow-700
+                        {% else %}text-red-700{% endif %}">
+                        {{ count }}
+                    </div>
+                    <div class="text-sm 
+                        {% if difficulty == 'Easy' %}text-green-600
+                        {% elif difficulty == 'Medium' %}text-yellow-600
+                        {% else %}text-red-600{% endif %}">
+                        {{ difficulty }} Problems
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="h-64">
+                <canvas id="problemsChart"></canvas>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No coding problem data available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Project Stats -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-purple-700">
+                <i class="fas fa-project-diagram mr-2"></i>Project Status
+            </h2>
+            
+            {% if project_stats %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {% for status, count in project_stats.items() %}
+                <div class="text-center p-4 rounded-lg
+                    {% if status == 'Not Started' %}bg-gray-100
+                    {% elif status == 'In Progress' %}bg-blue-100
+                    {% else %}bg-green-100{% endif %}">
+                    <div class="text-3xl font-bold 
+                        {% if status == 'Not Started' %}text-gray-700
+                        {% elif status == 'In Progress' %}text-blue-700
+                        {% else %}text-green-700{% endif %}">
+                        {{ count }}
+                    </div>
+                    <div class="text-sm 
+                        {% if status == 'Not Started' %}text-gray-600
+                        {% elif status == 'In Progress' %}text-blue-600
+                        {% else %}text-green-600{% endif %}">
+                        {{ status }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="h-64">
+                <canvas id="projectsChart"></canvas>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No project data available.</p>
+            {% endif %}
+    </div>
+
+    <script>
+        // Study Time Chart
+        {% if study_time %}
+        const studyCtx = document.getElementById('studyTimeChart').getContext('2d');
+        new Chart(studyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ study_time.keys()|list|tojson }},
+                datasets: [{
+                    label: 'Study Hours',
+                    data: {{ study_time.values()|list|tojson }},
+                    backgroundColor: [
+                        '#3B82F6', '#10B981', '#F59E0B', '#EF4444', 
+                        '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16',
+                        '#F97316', '#6366F1', '#14B8A6', '#A855F7'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // Problems Chart
+        {% if problem_stats %}
+        const problemsCtx = document.getElementById('problemsChart').getContext('2d');
+        new Chart(problemsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ problem_stats.keys()|list|tojson }},
+                datasets: [{
+                    data: {{ problem_stats.values()|list|tojson }},
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // Projects Chart
+        {% if project_stats %}
+        const projectsCtx = document.getElementById('projectsChart').getContext('2d');
+        new Chart(projectsCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ project_stats.keys()|list|tojson }},
+                datasets: [{
+                    data: {{ project_stats.values()|list|tojson }},
+                    backgroundColor: ['#9CA3AF', '#3B82F6', '#10B981'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

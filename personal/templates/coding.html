@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Study Tracker - Coding Problems</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Profile -->
+        <header class="bg-green-600 text-white p-6 rounded-lg shadow-md mb-8 flex items-center space-x-4">
+            <img src="{{ profile.picture_url }}" alt="Profile Picture" class="w-48 h-48 rounded-full object-cover border-2 border-white" />
+            <div>
+                <h1 class="text-3xl font-bold">{{ profile.name }}</h1>
+                <p class="mt-1">{{ profile.course }}</p>
+                <p class="mt-2">Track your coding practice and problem-solving progress</p>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="mb-8 bg-white rounded-lg shadow-md p-4">
+            <ul class="flex flex-wrap justify-center space-x-4">
+                <li><a href="/" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Dashboard</a></li>
+                <li><a href="/studies" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Study Sessions</a></li>
+                <li><a href="/coding" class="text-green-600 font-semibold px-4 py-2 rounded hover:bg-blue-100">Coding Problems</a></li>
+                <li><a href="/projects" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Projects</a></li>
+                <li><a href="/reports" class="text-gray-700 px-4 py-2 rounded hover:bg-blue-100">Reports</a></li>
+            </ul>
+        </nav>
+
+        <!-- Add Coding Problem Button -->
+        <div class="mb-6">
+            <button onclick="document.getElementById('codingModal').classList.remove('hidden')" 
+                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition">
+                <i class="fas fa-plus mr-2"></i>Add Coding Problem
+            </button>
+        </div>
+
+        <!-- Coding Problems List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-green-700">
+                <i class="fas fa-code mr-2"></i>All Coding Problems
+            </h2>
+            
+            {% if coding_problems %}
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="p-3 text-left">Date</th>
+                            <th class="p-3 text-left">Problem</th>
+                            <th class="p-3 text-left">Platform</th>
+                            <th class="p-3 text-left">Difficulty</th>
+                            <th class="p-3 text-left">Status</th>
+                            <th class="p-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for problem in coding_problems|sort(attribute='date', reverse=true) %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="p-3">{{ problem.date }}</td>
+                            <td class="p-3">
+                                {% if problem.solution_link %}
+                                <a href="{{ problem.solution_link }}" target="_blank" class="text-blue-600 hover:underline">
+                                    {{ problem.problem }}
+                                </a>
+                                {% else %}
+                                {{ problem.problem }}
+                                {% endif %}
+                            </td>
+                            <td class="p-3">{{ problem.platform }}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-1 rounded text-xs 
+                                    {% if problem.difficulty == 'Easy' %}bg-green-100 text-green-800
+                                    {% elif problem.difficulty == 'Medium' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ problem.difficulty }}
+                                </span>
+                            </td>
+                            <td class="p-3">
+                                {% if problem.completed %}
+                                <span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800">Completed</span>
+                                {% else %}
+                                <span class="px-2 py-1 rounded text-xs bg-red-100 text-red-800">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-3">
+                                <a href="/toggle_problem_status/{{ problem.id }}" 
+                                   class="px-3 py-1 rounded text-sm 
+                                   {% if problem.completed %}bg-gray-600 text-white{% else %}bg-green-600 text-white{% endif %}">
+                                   {% if problem.completed %}Mark Pending{% else %}Mark Completed{% endif %}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">No coding problems recorded yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Add Coding Problem Modal -->
+        <div id="codingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-xl font-semibold mb-4">Add Coding Problem</h3>
+                <form action="/add_coding_problem" method="post">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Date</label>
+                        <input type="date" name="date" value="{{ today }}" class="w-full p-2 border border-gray-300 rounded" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Platform</label>
+                        <input type="text" name="platform" placeholder="LeetCode, HackerRank, etc." class="w-full p-2 border border-gray-300 rounded" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Problem Name</label>
+                        <input type="text" name="problem" class="w-full p-2 border border-gray-300 rounded" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Difficulty</label>
+                        <select name="difficulty" class="w-full p-2 border border-gray-300 rounded" required>
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Solution Link (optional)</label>
+                        <input type="url" name="solution_link" class="w-full p-2 border border-gray-300 rounded" />
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('codingModal').classList.add('hidden')" 
+                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // Close modal when clicking outside
+            document.getElementById('codingModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('codingModal')) {
+                    document.getElementById('codingModal').classList.add('hidden');
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

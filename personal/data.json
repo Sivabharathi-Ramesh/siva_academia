@@ -1,0 +1,79 @@
+{
+    "subjects": [
+        {
+            "id": 1,
+            "name": "Software Engineering",
+            "completed": false
+        },
+        {
+            "id": 2,
+            "name": "Mobile Applications",
+            "completed": false
+        },
+        {
+            "id": 3,
+            "name": "Data Structure",
+            "completed": false
+        },
+        {
+            "id": 4,
+            "name": "Mathematics",
+            "completed": false
+        },
+        {
+            "id": 5,
+            "name": "Information Security",
+            "completed": false
+        },
+        {
+            "id": 6,
+            "name": "Frontend Development",
+            "completed": false
+        },
+        {
+            "id": 7,
+            "name": "Basic Indian Language",
+            "completed": false
+        },
+        {
+            "id": 8,
+            "name": "Information Security lab",
+            "completed": false
+        },
+        {
+            "id": 9,
+            "name": "Frontend Development lab",
+            "completed": false
+        },
+        {
+            "id": 10,
+            "name": "Mobile Applications lab",
+            "completed": false
+        },
+        {
+            "id": 11,
+            "name": "Data Structure lab",
+            "completed": false
+        },
+        {
+            "id": 12,
+            "name": "Integral Yoga",
+            "completed": false
+        }
+    ],
+    "study_sessions": [
+        {
+            "id": 1,
+            "subject_id": 1,
+            "date": "2025-09-14",
+            "duration": 1.0,
+            "topics": "project",
+            "notes": "i will cover it"
+        }
+    ],
+    "coding_problems": [],
+    "projects": [],
+    "settings": {
+        "dark_mode": false
+    }
+}
